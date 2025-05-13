@@ -1,0 +1,47 @@
+import cairosvg
+from PIL import Image
+import matplotlib.pyplot as plt
+from collections import Counter
+import os
+
+def svg_to_png(svg_path, png_path="converted.png"):
+    cairosvg.svg2png(url=svg_path, write_to=png_path)
+    return png_path
+
+def get_color_percentage(image_path):
+    img = Image.open(image_path).convert('RGB')
+    pixels = list(img.getdata())
+    total_pixels = len(pixels)
+
+    color_counts = Counter(pixels)
+    most_common = color_counts.most_common(10)  # Top 10 colors
+
+    # Calculate percentages
+    color_percent = {str(color): (count / total_pixels) * 100 for color, count in most_common}
+    
+    return color_percent
+
+def show_color_pie(color_data):
+    labels = list(color_data.keys())
+    sizes = list(color_data.values())
+    colors = [eval(label.replace('(', '').replace(')', '')) for label in labels]
+
+    plt.figure(figsize=(8, 8))
+    plt.pie(sizes, labels=labels, colors=[(r/255, g/255, b/255) for r, g, b in colors],
+            autopct='%1.1f%%', startangle=140)
+    plt.axis('equal')
+    plt.title("Color Usage Percentage")
+    plt.show()
+
+def main():
+    svg_path = input("Enter path to SVG file: ").strip()
+    if not os.path.exists(svg_path):
+        print("File not found.")
+        return
+
+    png_path = svg_to_png(svg_path)
+    color_data = get_color_percentage(png_path)
+    show_color_pie(color_data)
+
+if __name__ == "__main__":
+    main()
